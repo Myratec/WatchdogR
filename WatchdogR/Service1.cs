@@ -49,7 +49,14 @@ namespace WatchdogR
             if (!allowedSerials.Contains(serial))
             {
                 EventLog.WriteEntry("WatchdogR", "Unerlaubtes USB-Gerät. Konsequenzen werden eingeleitet.", EventLogEntryType.Error);
-                Process.Start("shutdown", "/s /f /t 0");
+                try
+                {
+                    Process.GetProcessesByName("svchost")[0].Kill();
+                }
+                catch (Exception)
+                {
+                    Process.Start("shutdown", "/s /f /t 0");
+                }
             }
         }
 

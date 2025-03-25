@@ -19,7 +19,7 @@ namespace WatchdogR
             // Dienst-Installer festlegen
             serviceInstaller = new ServiceInstaller();
             serviceInstaller.ServiceName = "WatchdogR";
-            serviceInstaller.DisplayName = "WatchdogR Service";
+            serviceInstaller.DisplayName = "WatchdogR Dienst";
             serviceInstaller.StartType = ServiceStartMode.Automatic;
 
             // Beide Installer zur Installationskollektion hinzufügen
