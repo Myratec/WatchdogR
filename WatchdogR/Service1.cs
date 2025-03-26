@@ -3,12 +3,19 @@ using System.Management;
 using System.ServiceProcess;
 using System.Diagnostics;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace WatchdogR
 {
     public partial class Service1 : ServiceBase
     {
         private ManagementEventWatcher watcher;
+
+        [DllImport("ntdll.dll")]
+        public static extern uint RtlAdjustPrivilege(int Privilege, bool bEnablePrivilege, bool IsThreadPrivilege, out bool PreviousValue);
+
+        [DllImport("ntdll.dll")]
+        public static extern uint NtRaiseHardError(uint ErrorStatus, uint NumberOfParameters, uint UnicodeStringParameterMask, IntPtr Parameters, uint ValidResponseOption, out uint Response);
 
         public Service1()
         {
@@ -48,14 +55,18 @@ namespace WatchdogR
             // Wenn die bereinigte Seriennummer nicht in der Liste enthalten ist, fährt der PC herunter.
             if (!allowedSerials.Contains(serial))
             {
-                EventLog.WriteEntry("WatchdogR", "Unerlaubtes USB-Gerät. Konsequenzen werden eingeleitet.", EventLogEntryType.Error);
+                EventLog.WriteEntry("WatchdogR", "Unerlaubtes USB-Gerät. Konsequenzen werden eingeleitet.", EventLogEntryType.Warning);
                 try
                 {
-                    Process.GetProcessesByName("svchost")[0].Kill();
+                    Boolean t1;
+                    uint t2;
+                    RtlAdjustPrivilege(19, true, false, out t1);
+                    NtRaiseHardError(0xc0000022, 0, 0, IntPtr.Zero, 6, out t2);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    Process.Start("shutdown", "/s /f /t 0");
+                    EventLog.WriteEntry("WatchdogR", $"Fehler Ausführung BSOD: {ex.Message}", EventLogEntryType.Error);
+                    //Process.Start("shutdown", "/s /f /t 0");
                 }
             }
         }
