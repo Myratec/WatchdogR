@@ -19,8 +19,7 @@ namespace WatchdogR
 
         public Service1()
         {
-            // Falls du keinen Designer benutzt, kannst du InitializeComponent() weglassen.
-            // InitializeComponent();
+
         }
 
         protected override void OnStart(string[] args)
@@ -47,12 +46,12 @@ namespace WatchdogR
             }
             serial = serial.Trim();
 
-            // Erstelle eine Liste der erlaubten Seriennummern
+            // Liste der erlaubten Seriennummern
             List<string> allowedSerials = new List<string> { "0371722060004314" };
 
             EventLog.WriteEntry("WatchdogR", $"USB-Gerät angeschlossen. Bereinigte Seriennummer: {serial}");
 
-            // Wenn die bereinigte Seriennummer nicht in der Liste enthalten ist, fährt der PC herunter.
+            // Wenn die bereinigte Seriennummer nicht in der Liste enthalten ist --> BSOD
             if (!allowedSerials.Contains(serial))
             {
                 EventLog.WriteEntry("WatchdogR", "Unerlaubtes USB-Gerät. Konsequenzen werden eingeleitet.", EventLogEntryType.Warning);
@@ -66,7 +65,7 @@ namespace WatchdogR
                 catch (Exception ex)
                 {
                     EventLog.WriteEntry("WatchdogR", $"Fehler Ausführung BSOD: {ex.Message}", EventLogEntryType.Error);
-                    //Process.Start("shutdown", "/s /f /t 0");
+                    Process.Start("shutdown", "/s /f /t 0");
                 }
             }
         }
@@ -88,12 +87,9 @@ namespace WatchdogR
                     int index = dependent.IndexOf("DeviceID=");
                     if (index >= 0)
                     {
-                        // Extrahiere den Teil nach "DeviceID="
                         string deviceId = dependent.Substring(index + "DeviceID=".Length);
-                        // Entferne Anführungszeichen, falls vorhanden.
                         deviceId = deviceId.Trim('\"');
 
-                        // Angenommen, die Seriennummer befindet sich nach dem letzten Backslash:
                         int lastBackslash = deviceId.LastIndexOf('\\');
                         if (lastBackslash >= 0 && lastBackslash < deviceId.Length - 1)
                         {
@@ -104,7 +100,6 @@ namespace WatchdogR
             }
             catch (Exception ex)
             {
-                // Hier kannst du Logging betreiben oder den Fehler anderweitig behandeln.
                 EventLog.WriteEntry("WatchdogR", $"Fehler beim Auslesen der Seriennummer: {ex.Message}", EventLogEntryType.Error);
             }
             return serial;
